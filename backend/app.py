@@ -2,7 +2,7 @@ from flask import Flask, json
 from flask_cors import CORS
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 
-import pprint
+import Game
 import word_model
 
 app = Flask(__name__)
@@ -41,13 +41,40 @@ def disconnect():
 
 
 
+@socketio.on('createRoom')
+def create_room(player):
+    room_code = Game.create_room(player)
+    Game.get_rooms()
+    join_room(room_code)
+    print("create room")
+
+
+@socketio.on('joinRoom')
+def joining_room(room_code, player):
+    Game.join_room(room_code, player)
+    Game.get_rooms()
+    join_room(room_code)
+    print("join room")
+
+
+@socketio.on('leaveRoom')
+def leaving_room(room_code, player):
+    Game.leave_room(room_code, player)
+    Game.get_rooms()
+    leave_room(room_code)
+    print("player remove")
+
+
+
+
+
 
 @socketio.on('join')
 def on_join(data):
     username = data['username']
     print(username + ' has entered the room.')
     room = data['room']
-    join_room(room)
+
     send(username + ' has entered the room.', to=room)
 
 @socketio.on('leave')
@@ -57,8 +84,6 @@ def on_leave(data):
     room = data['room']
     leave_room(room)
     send(username + ' has left the room.', to=room)
-
-
 
 @socketio.on('my_event')
 def my_event(data, methods=['GET']):

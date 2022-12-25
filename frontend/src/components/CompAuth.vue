@@ -1,12 +1,16 @@
 <template>
   <div class="main">
-
     <div class="main__name-block">
       <div class="main__name-label">
         <p>name</p>
       </div>
       <div class="main__name-input-block nomasion_desanid">
-        <input @click="inputFocus" v-model="name" type="text" class="main__name-input">
+        <input
+          @click="inputFocus"
+          v-model="name"
+          type="text"
+          class="main__name-input"
+        />
       </div>
     </div>
 
@@ -17,45 +21,62 @@
     <div class="main__game-join-block">
       <div class="btn" @click="joinRoom('join')">join</div>
     </div>
-
   </div>
 </template>
 
 <script>
+import io from "socket.io-client";
+import global from "../global";
+
 export default {
   name: "CompAuth",
   data() {
     return {
       name: "",
-    }
+      id: 12,
+    };
   },
   created() {
-      this.name = this.$cookie.getCookie("name") || this.name;
+    this.socket = io.connect(global.back_ip);
+    this.name = this.$cookie.getCookie("name") || this.name;
+    this.id = this.$cookie.getCookie("id") || this.id;
+
+    this.socket.on("connect", function () {
+      console.log("connected to webSocket");
+      this.emit("my_event", "ping");
+    });
+
+    this.socket.on("message", function (msg) {
+      console.log(msg);
+    });
+
   },
   methods: {
-    inputChange: function (e) {
-      let char = e.data;
-      console.log(e)
-    },
     inputFocus: function () {
-      this.name = ''
+      this.name = "";
     },
     joinRoom: function (type) {
       if (this.name.length < 1) {
-        return
+        return;
       }
 
-      this.$cookie.setCookie("name", this.name)
+      this.$cookie.setCookie("name", this.name);
 
-      this.$emit("changeComp", "Game")
-    }
-  }
-}
+      if (type === "create") {
+        this.socket.emit("createRoom", { id: this.id, name: this.name });
+      } else {
+        this.socket.emit("joinRoom", 0, { id: this.id, name: this.name });
+      }
+
+      this.$emit("changeComp", "Game");
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-.nomasion_desanid:after{
-  content: '';
+.nomasion_desanid:after {
+  content: "";
   position: absolute;
   z-index: -2;
   left: 0;
@@ -68,8 +89,8 @@ export default {
   opacity: 1;
   border-radius: 60px;
   filter: blur(60px);
-  transform: translate3d(0,0,0);
-  background: linear-gradient(-134deg,#0083ff 0,#d582ff 100%);
+  transform: translate3d(0, 0, 0);
+  background: linear-gradient(-134deg, #0083ff 0, #d582ff 100%);
   animation: glow 3s infinite;
 }
 @keyframes glow {
@@ -86,8 +107,6 @@ export default {
     width: 100%;
   }
 }
-
-
 
 .btn {
   -moz-user-select: none;
@@ -113,11 +132,9 @@ export default {
   display: inherit;
 }
 
-
 .main__name-input {
   position: absolute;
   width: 100vw;
-
 
   border: none;
   //border-radius: 7px;
@@ -167,7 +184,6 @@ export default {
   user-select: none;
 }
 
-
 .main__game-create-block {
   justify-content: center;
   align-items: center;
@@ -182,13 +198,12 @@ export default {
 }
 
 // ПК
-@media screen and (max-width : 1024px) {
+@media screen and (max-width: 1024px) {
   .main {
     padding: 100px 60px;
   }
 
   .main__name-block {
-
   }
 
   .main__name-label {
@@ -197,13 +212,13 @@ export default {
   }
 }
 // Планшет
-@media screen and (max-width : 800px) {
+@media screen and (max-width: 800px) {
   .main {
     padding: 200px 60px;
   }
 }
 // Телефон
-@media screen and (max-width : 420px) {
+@media screen and (max-width: 420px) {
   .main {
     padding: 80px 60px;
   }

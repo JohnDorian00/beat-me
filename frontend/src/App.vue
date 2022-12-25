@@ -1,7 +1,7 @@
 <template>
-<!--  <div><input style="width: 500px; height: 100px" v-model="input" /></div>-->
-<!--  <div><button style="width: 200px; height: 50px" @click="send"></button></div>-->
-<!--  <div>{{ this.answers }}</div>-->
+  <!--  <div><input style="width: 500px; height: 100px" v-model="input" /></div>-->
+  <!--  <div><button style="width: 200px; height: 50px" @click="send"></button></div>-->
+  <!--  <div>{{ this.answers }}</div>-->
   <component @changeComp="changeComp" :is="activeComp"></component>
 </template>
 
@@ -18,11 +18,11 @@ export default {
       list: null,
       answers: [],
       input: "",
-      activeComp: CompGame,
+      activeComp: CompAuth,
       comps: {
-        "CompAuth": CompAuth,
-        "CompGame": CompGame,
-      }
+        CompAuth: CompAuth,
+        CompGame: CompGame,
+      },
     };
   },
   beforeCreate() {
@@ -31,26 +31,7 @@ export default {
       console.log(this.list);
     })();
   },
-  created() {
-    // test websocket connection
-    const socket = io.connect(global.back_ip);
-
-    // getting data from server
-    // eslint-disable-next-line
-    socket.on('connect', function () {
-      console.log("connected to webSocket");
-      //sending to server
-      socket.emit("my_event", "ping");
-      socket.emit("join", { username: "nikita", room: 1 });
-      socket.emit("leave", { username: "nikita", room: 1 });
-    });
-
-    // we have to use the arrow function to bind this in the function
-    // so that we can access Vue  & its methods
-    socket.on("message", (data) => {
-      console.log(data);
-    });
-  },
+  created() {},
   methods: {
     changeComp: function (compName) {
       this.activeComp = this.comps["Comp" + compName] || this.activeComp;
@@ -71,6 +52,7 @@ export default {
 @font-face {
   font-family: "ChargeVectorBlack";
   src: local("ChargeVectorBlack"),
-  url("./assets/fonts/Charge Vector Black/ChargeVectorBlack.ttf") format("truetype");
+    url("./assets/fonts/Charge Vector Black/ChargeVectorBlack.ttf")
+      format("truetype");
 }
 </style>
