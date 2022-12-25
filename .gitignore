@@ -1,0 +1,7 @@
+.idea
+beat-me.iml
+frontend/node_modules
+frontend/package-lock.json
+backend/env
+backend/__pycache__
+backend/model
