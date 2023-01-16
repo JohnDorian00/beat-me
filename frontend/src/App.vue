@@ -51,9 +51,9 @@ export default {
     });
   },
   methods: {
-    joinRoom: function (joinInfo) {
-      this.roomId = joinInfo.roomId;
-      this.startInfoAboutGame = {words: joinInfo.words, players: joinInfo.players}
+    joinRoom: function (roomId) {
+      this.roomId = roomId;
+      // this.startInfoAboutGame = {words: joinInfo.words, players: joinInfo.players}
 
       this.changeComp("Game")
     },

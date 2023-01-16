@@ -70,19 +70,18 @@ export default {
     }
   },
   created() {
-    this.players = this.startInfoAboutGame.players || [];
-    this.words = this.startInfoAboutGame.words || [];
-
     window.addEventListener("beforeunload", ()=> {this.socket.emit("leaveRoom", 0, { id: 0, name: this.name })});
 
-
-
-    this.socket.on("word2front", (word) => {
-      this.words.push(word);
+    this.socket.on("fin", (winner) => {
+      console.log(winner)
     });
-    this.socket.on("finish_round", (word) => {
-      console.log(word.color = "green")
-      this.words.push(word);
+
+    this.socket.on("send_words", (words) => {
+      this.words = words;
+    });
+
+    this.socket.on("send_players", (players) => {
+      this.players = players
     });
   },
   beforeUnmount() {

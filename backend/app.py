@@ -51,7 +51,8 @@ def creating_room(user):
     join_room(room_id)
     print(msg)
     send(msg, to=room_id)
-    socketio.emit('join_response', {"room_id": room_id, "players": room.get_players(), "words": None}, to=request.sid)
+    socketio.emit('join_response', room_id, to=request.sid)
+    send_players(room_id)
 
 
 @socketio.on('joining_room')
@@ -64,18 +65,29 @@ def joining_room(room_id, user):
     join_room(room_id)
     print(msg)
     send(msg, to=room_id)
-    socketio.emit('join_response', {"room_id": room_id, "players": room.get_players(), "words": None}, to=request.sid)
+    socketio.emit('join_response', room_id, to=request.sid)
+    send_players(room_id)
 
 
 @socketio.on('word2back')
 def word2back(word):
     result = Game.send_word(request.sid, word)
     if result is not None:
-        if result["word_level"] == 1:
-            socketio.emit('finish_round', {"word": word, "lvl": result["word_level"], "color": result["color"]}, to=result["room_id"])
-        else:
-            socketio.emit('word2front', {"word": word, "lvl": result["word_level"], "color": result["color"]}, to=result["room_id"])
+        send_words(result["room_id"])
+        if result["isFin"] is not None:
+            socketio.emit('fin', result["isFin"], to=result["room_id"])
 
+
+def send_words(room_id):
+    socketio.emit('send_words', Game.get_words(room_id), to=room_id)
+
+
+def send_players(room_id):
+    socketio.emit('send_players', Game.get_players(room_id), to=room_id)
+
+
+def update_all(room_id):
+    pass
 
 @socketio.on('message')
 def handle_message(data):

@@ -46,8 +46,8 @@ export default {
     this.name = this.$cookie.getCookie("name") || this.name;
     this.id = this.$cookie.getCookie("id") || this.id;
 
-    this.socket.on("join_response", (joinInfo) => {
-      this.$emit("joinRoom", joinInfo);
+    this.socket.on("join_response", () => {
+      this.$emit("joinRoom");
     });
   },
   methods: {
