@@ -1,68 +1,104 @@
 <template>
   <div class="game">
-
     <div class="game__score-block">
-      <div class="game__score" :style="{ color: player.color || 'white' }" v-for="player in players">
-        {{player.name}} {{player.score}}
+      <div
+        class="game__score"
+        :style="{ color: player.color || 'white' }"
+        v-for="player in players"
+      >
+        {{ player.name }} {{ player.score }}
       </div>
     </div>
 
     <div class="game__input-block">
       <div class="game__name-input-block !nomasion_desanid">
-        <input @keyup.enter="wordSubmit" v-model="word" type="text" class="game__name-input">
+        <input
+          autofocus
+          @keyup.enter="wordSend"
+          v-model="word"
+          type="text"
+          class="game__name-input"
+        />
       </div>
     </div>
 
     <div class="game__words-block">
-
-      <div class="game__last-word" :style="{ color: this.history[0].color || 'white' }">
+      <div
+        class="game__last-word"
+        :style="{ color: 'white' }"
+      >
         {{ this.lastWord }}
       </div>
 
       <div class="game__words-overflow">
-        <div class="game__words" :style="{ color: row.color || 'white' }" v-for="row in history">
-          {{ row.word }}
+        <div
+          class="game__words"
+          :style="{ color: row.color || 'white' }"
+          v-for="row in sortedWords"
+        >
+          {{ row.lvl }} -> {{ row.word }}
         </div>
       </div>
-
     </div>
 
     <button class="exit-button" @click="leaveRoom">exit</button>
-
   </div>
 </template>
 
 <script>
+import io from "socket.io-client";
+import global from "../global";
+
 export default {
   name: "CompGame",
+  props: {
+    socket: Object,
+    roomId: Number,
+    startInfoAboutGame: Object,
+  },
   data() {
     return {
-      word: "",
+      word: "месяц",
       players: [],
-      history: [],
-      lastWord: "example"
+      words: [],
+      lastWord: "",
+    };
+  },
+  computed: {
+    sortedWords: function () {
+      return this.words.sort((a, b) => a.lvl - b.lvl);
     }
   },
   created() {
-    for (let i=0; i<10; i++) {
-      this.players.push({name: "nikita", id: 1, score: 12, color: "#0640d5"})
-    }
+    window.addEventListener("beforeunload", ()=> {this.socket.emit("leaveRoom", 0, { id: 0, name: this.name })});
 
-    this.history.push({word: "word0", color: "red"})
-    for (let i=0; i<10; i++) {
-      this.history.push({word: "word1", color: "#0640d5"})
-    }
+    this.socket.on("fin", (winner) => {
+      console.log(winner)
+    });
+
+    this.socket.on("send_words", (words) => {
+      this.words = words;
+    });
+
+    this.socket.on("send_players", (players) => {
+      this.players = players
+    });
+  },
+  beforeUnmount() {
+    console.log("exit");
+    this.socket.emit("leaveRoom", 0, { id: 0, name: this.name });
   },
   methods: {
     leaveRoom: function () {
-      this.$emit("changeComp", "Auth")
+      this.$emit("changeComp", "Auth");
     },
-    wordSubmit: function () {
+    wordSend: function () {
       this.lastWord = this.word;
+      this.socket.emit("word2back", this.word);
       this.word = "";
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -83,7 +119,7 @@ export default {
 
   padding: 10px 22px;
 
-  overflow: hidden;
+  overflow: auto;
 }
 
 .game__input-block {
@@ -124,15 +160,13 @@ export default {
 }
 
 // ПК
-@media screen and (max-width : 1024px) {
-
+@media screen and (max-width: 1024px) {
 }
 // Планшет
-@media screen and (max-width : 800px) {
-
+@media screen and (max-width: 800px) {
 }
 // Телефон
-@media screen and (max-width : 420px) {
+@media screen and (max-width: 420px) {
   .game__score-block {
     flex: 0 0 170px;
   }
@@ -154,8 +188,8 @@ export default {
   border: 1px solid white;
 }
 
-.nomasion_desanid:after{
-  content: '';
+.nomasion_desanid:after {
+  content: "";
   position: absolute;
   z-index: -2;
   left: 0;
@@ -168,8 +202,8 @@ export default {
   opacity: 1;
   border-radius: 60px;
   filter: blur(60px);
-  transform: translate3d(0,0,0);
-  background: linear-gradient(-134deg,#0083ff 0,#d582ff 100%);
+  transform: translate3d(0, 0, 0);
+  background: linear-gradient(-134deg, #0083ff 0, #d582ff 100%);
   animation: glow 3s infinite;
 }
 @keyframes glow {
@@ -198,7 +232,7 @@ export default {
   color: white;
 
   font-size: 3.8rem;
-  font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
+  //font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
 
   text-align: center;
 }
@@ -215,6 +249,6 @@ export default {
   position: absolute;
   right: 0;
   width: 50px;
-  height: 50px
+  height: 50px;
 }
 </style>

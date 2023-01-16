@@ -5,8 +5,14 @@
       <div class="main__name-label">
         <p>name</p>
       </div>
+
       <div class="main__name-input-block nomasion_desanid">
-        <input @click="inputFocus" v-model="name" type="text" class="main__name-input">
+        <input
+          @click="inputFocus"
+          v-model="name"
+          type="text"
+          class="main__name-input"
+        />
       </div>
     </div>
 
@@ -16,46 +22,58 @@
 
     <div class="main__game-join-block">
       <div class="btn" @click="joinRoom('join')">join</div>
+<!--      <div class="btn" @click="joinRoom('join')">join</div>-->
     </div>
 
   </div>
 </template>
 
 <script>
+import global from "../global";
+
 export default {
   name: "CompAuth",
+  props: {
+    socket: Object
+  },
   data() {
     return {
       name: "",
-    }
+      id: null,
+    };
   },
   created() {
-      this.name = this.$cookie.getCookie("name") || this.name;
+    this.name = this.$cookie.getCookie("name") || this.name;
+    this.id = this.$cookie.getCookie("id") || this.id;
+
+    this.socket.on("join_response", () => {
+      this.$emit("joinRoom");
+    });
   },
   methods: {
-    inputChange: function (e) {
-      let char = e.data;
-      console.log(e)
-    },
     inputFocus: function () {
-      this.name = ''
+      this.name = "";
     },
     joinRoom: function (type) {
       if (this.name.length < 1) {
-        return
+        return;
       }
 
-      this.$cookie.setCookie("name", this.name)
+      this.$cookie.setCookie("name", this.name);
 
-      this.$emit("changeComp", "Game")
-    }
-  }
-}
+      if (type === "create") {
+        this.socket.emit("creating_room", { id: this.id, name: this.name });
+      } else {
+        this.socket.emit("joining_room", prompt('Room #'), {id: this.id, name: this.name });
+      }
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-.nomasion_desanid:after{
-  content: '';
+.nomasion_desanid:after {
+  content: "";
   position: absolute;
   z-index: -2;
   left: 0;
@@ -68,8 +86,8 @@ export default {
   opacity: 1;
   border-radius: 60px;
   filter: blur(60px);
-  transform: translate3d(0,0,0);
-  background: linear-gradient(-134deg,#0083ff 0,#d582ff 100%);
+  transform: translate3d(0, 0, 0);
+  background: linear-gradient(-134deg, #0083ff 0, #d582ff 100%);
   animation: glow 3s infinite;
 }
 @keyframes glow {
@@ -87,8 +105,6 @@ export default {
   }
 }
 
-
-
 .btn {
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -99,7 +115,7 @@ export default {
   text-align: center;
   font-size: 2.5rem;
   text-transform: uppercase;
-  font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
+  //font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
 }
 
 .main {
@@ -113,11 +129,9 @@ export default {
   display: inherit;
 }
 
-
 .main__name-input {
   position: absolute;
   width: 100vw;
-
 
   border: none;
   //border-radius: 7px;
@@ -127,7 +141,7 @@ export default {
   color: white;
 
   font-size: 3.8rem;
-  font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
+  //font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
 
   text-align: center;
 }
@@ -167,7 +181,6 @@ export default {
   user-select: none;
 }
 
-
 .main__game-create-block {
   justify-content: center;
   align-items: center;
@@ -182,13 +195,12 @@ export default {
 }
 
 // ПК
-@media screen and (max-width : 1024px) {
+@media screen and (max-width: 1024px) {
   .main {
     padding: 100px 60px;
   }
 
   .main__name-block {
-
   }
 
   .main__name-label {
@@ -197,13 +209,13 @@ export default {
   }
 }
 // Планшет
-@media screen and (max-width : 800px) {
+@media screen and (max-width: 800px) {
   .main {
     padding: 200px 60px;
   }
 }
 // Телефон
-@media screen and (max-width : 420px) {
+@media screen and (max-width: 420px) {
   .main {
     padding: 80px 60px;
   }
