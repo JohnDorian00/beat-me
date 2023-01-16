@@ -1,9 +1,11 @@
 <template>
   <div class="main">
+
     <div class="main__name-block">
       <div class="main__name-label">
         <p>name</p>
       </div>
+
       <div class="main__name-input-block nomasion_desanid">
         <input
           @click="inputFocus"
@@ -20,36 +22,33 @@
 
     <div class="main__game-join-block">
       <div class="btn" @click="joinRoom('join')">join</div>
+<!--      <div class="btn" @click="joinRoom('join')">join</div>-->
     </div>
+
   </div>
 </template>
 
 <script>
-import io from "socket.io-client";
 import global from "../global";
 
 export default {
   name: "CompAuth",
+  props: {
+    socket: Object
+  },
   data() {
     return {
       name: "",
-      id: 12,
+      id: null,
     };
   },
   created() {
-    this.socket = io.connect(global.back_ip);
     this.name = this.$cookie.getCookie("name") || this.name;
     this.id = this.$cookie.getCookie("id") || this.id;
 
-    this.socket.on("connect", function () {
-      console.log("connected to webSocket");
-      this.emit("my_event", "ping");
+    this.socket.on("join_response", (joinInfo) => {
+      this.$emit("joinRoom", joinInfo);
     });
-
-    this.socket.on("message", function (msg) {
-      console.log(msg);
-    });
-
   },
   methods: {
     inputFocus: function () {
@@ -63,12 +62,10 @@ export default {
       this.$cookie.setCookie("name", this.name);
 
       if (type === "create") {
-        this.socket.emit("createRoom", { id: this.id, name: this.name });
+        this.socket.emit("creating_room", { id: this.id, name: this.name });
       } else {
-        this.socket.emit("joinRoom", 0, { id: this.id, name: this.name });
+        this.socket.emit("joining_room", prompt('Room #'), {id: this.id, name: this.name });
       }
-
-      this.$emit("changeComp", "Game");
     },
   },
 };
@@ -118,7 +115,7 @@ export default {
   text-align: center;
   font-size: 2.5rem;
   text-transform: uppercase;
-  font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
+  //font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
 }
 
 .main {
@@ -144,7 +141,7 @@ export default {
   color: white;
 
   font-size: 3.8rem;
-  font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
+  //font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
 
   text-align: center;
 }

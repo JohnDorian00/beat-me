@@ -13,7 +13,8 @@
     <div class="game__input-block">
       <div class="game__name-input-block !nomasion_desanid">
         <input
-          @keyup.enter="wordSubmit"
+          autofocus
+          @keyup.enter="wordSend"
           v-model="word"
           type="text"
           class="game__name-input"
@@ -24,7 +25,7 @@
     <div class="game__words-block">
       <div
         class="game__last-word"
-        :style="{ color: this.history[0].color || 'white' }"
+        :style="{ color: 'white' }"
       >
         {{ this.lastWord }}
       </div>
@@ -33,9 +34,9 @@
         <div
           class="game__words"
           :style="{ color: row.color || 'white' }"
-          v-for="row in history"
+          v-for="row in sortedWords"
         >
-          {{ row.word }}
+          {{ row.lvl }} -> {{ row.word }}
         </div>
       </div>
     </div>
@@ -50,38 +51,51 @@ import global from "../global";
 
 export default {
   name: "CompGame",
+  props: {
+    socket: Object,
+    roomId: Number,
+    startInfoAboutGame: Object,
+  },
   data() {
     return {
-      word: "",
+      word: "месяц",
       players: [],
-      history: [],
-      lastWord: "example",
+      words: [],
+      lastWord: "",
     };
   },
+  computed: {
+    sortedWords: function () {
+      return this.words.sort((a, b) => a.lvl - b.lvl);
+    }
+  },
   created() {
-    this.socket = io.connect(global.back_ip);
-
-    for (let i = 0; i < 10; i++) {
-      this.players.push({ name: "nikita", id: 1, score: 12, color: "#0640d5" });
-    }
-
-    this.history.push({ word: "word0", color: "red" });
-    for (let i = 0; i < 10; i++) {
-      this.history.push({ word: "word1", color: "#0640d5" });
-    }
+    this.players = this.startInfoAboutGame.players || [];
+    this.words = this.startInfoAboutGame.words || [];
 
     window.addEventListener("beforeunload", ()=> {this.socket.emit("leaveRoom", 0, { id: 0, name: this.name })});
+
+
+
+    this.socket.on("word2front", (word) => {
+      this.words.push(word);
+    });
+    this.socket.on("finish_round", (word) => {
+      console.log(word.color = "green")
+      this.words.push(word);
+    });
   },
   beforeUnmount() {
-    console.log("exit")
-    this.socket.emit("leaveRoom", 0, { id: 0, name: this.name })
+    console.log("exit");
+    this.socket.emit("leaveRoom", 0, { id: 0, name: this.name });
   },
   methods: {
     leaveRoom: function () {
       this.$emit("changeComp", "Auth");
     },
-    wordSubmit: function () {
+    wordSend: function () {
       this.lastWord = this.word;
+      this.socket.emit("word2back", this.word);
       this.word = "";
     },
   },
@@ -106,7 +120,7 @@ export default {
 
   padding: 10px 22px;
 
-  overflow: hidden;
+  overflow: auto;
 }
 
 .game__input-block {
@@ -219,7 +233,7 @@ export default {
   color: white;
 
   font-size: 3.8rem;
-  font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
+  //font-family: "ChargeVectorBlack", Helvetica, Arial, serif;
 
   text-align: center;
 }
