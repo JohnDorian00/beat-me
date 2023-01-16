@@ -4,6 +4,8 @@ from flask import Flask, json, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 
+import git
+
 import Game
 
 app = Flask(__name__)
@@ -14,19 +16,20 @@ CORS(app)
 
 
 # rest
-# @app.route("/get_list")
-# def get_list():
-#     words = word_model.get_words_list("собака", 15)
-#
-#     response = app.response_class(
-#         response=json.dumps(words),
-#         status=200,
-#         mimetype='application/json'
-#     )
-#     return response
+@app.route('/update_server', methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('https://github.com/JohnDorian00/beat-me/tree/main/backend')
+        origin = repo.remotes.origin
+
+        origin.pull()
+
+        return 'Updated PythonAnywhere successfully', 200
+    else:
+        return 'Wrong event type', 400
 
 
-# WebSocket
+    # WebSocket
 socketio = SocketIO(app, cors_allowed_origins='*', logger=True, engineio_logger=True)
 
 
