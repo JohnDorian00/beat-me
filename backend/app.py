@@ -16,6 +16,10 @@ CORS(app)
 
 
 # rest
+@app.route('/health')
+def health():
+    return "Server is up"
+
 @app.route('/update_server', methods=['POST'])
 def webhook():
     if request.method == 'POST':
