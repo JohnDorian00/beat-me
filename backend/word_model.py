@@ -1,17 +1,20 @@
 import pprint
 import time
+import os
 
 from gensim.models import KeyedVectors
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def create_model():
-    model = KeyedVectors.load_word2vec_format("model/model.txt", binary=False)
-    model.save("model/model")
+    model = KeyedVectors.load_word2vec_format(dir_path + "\model\model.txt", binary=False)
+    model.save(dir_path + "\model\model")
     return model
 
 
 def load_model():
-    return KeyedVectors.load("model/model")
+
+    return KeyedVectors.load(dir_path + "\model\model")
 
 
 def get_words_list(word, size):
@@ -27,7 +30,8 @@ def get_words_list(word, size):
 if __name__ == "__main__":
     start = time.time()
 
-    list_words = get_words_list("провайдер", 15)
+    # create_model()
+    list_words = get_words_list("зима", 15)
 
     pprint.pprint(list_words)
 

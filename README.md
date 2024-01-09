@@ -1,1 +1,1 @@
-beat-me game
+beat-me game - угадай слово, близкое по смыслу
